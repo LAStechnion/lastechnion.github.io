@@ -7,38 +7,55 @@
   <title>Lab of Adaptive Structures | Technion</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .home-hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(360px, .98fr);
-      align-items: center;
-      gap: clamp(34px, 5vw, 68px);
+  .home-hero {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(3rem, 5.8vw, 5.8rem);
+  }
+
+  .home-hero .lead {
+    max-width: 650px;
+  }
+
+  .home-hero::before {
+    content: "";
+    position: absolute;
+
+    width: 1000px;
+    height: 1000px;
+
+    right: -120px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    background-image: url("origami-robot-home.jpg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    opacity: 0.18;
+
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .home-hero > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 900px) {
+    .home-hero::before {
+      width: 750px;
+      height: 750px;
+      right: -250px;
+      opacity: 0.13;
     }
-    .home-hero-grid h1 { font-size: clamp(3rem, 5.8vw, 5.8rem); }
-    .home-hero-grid .lead { max-width: 650px; }
-    .hero-art {
-      margin: 0;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(13,38,61,.42);
-      box-shadow: 0 24px 60px rgba(0,0,0,.20);
-    }
-    .hero-art img {
-      display: block;
-      width: 100%;
-      height: auto;
-      border-radius: 9px;
-    }
-    .hero-art figcaption {
-      margin: 9px 4px 1px;
-      color: var(--muted);
-      font-size: .78rem;
-    }
-    @media (max-width: 900px) {
-      .home-hero-grid { grid-template-columns: 1fr; }
-      .hero-art { max-width: 760px; }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <header class="site-header">
@@ -51,7 +68,7 @@
   </header>
 
   <main class="home-main">
-    <section class="hero container home-hero-grid">
+    <section class="hero container home-hero">
       <div>
         <p class="eyebrow">Faculty of Mechanical Engineering · Technion</p>
         <h1>Lab of Adaptive<br>Structures</h1>
