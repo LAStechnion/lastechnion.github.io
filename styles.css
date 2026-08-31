@@ -76,7 +76,7 @@ p { margin-top: 0; }
 .card-cta { display: block; margin-top: 18px; color: var(--accent); font-weight: 700; }
 .research-card-head { display: flex; align-items: center; gap: 12px; min-height: 40px; }
 .research-card-head h2 { margin: 0; }
-.research-icon { width: 54px; height: 54px; object-fit: contain; flex-shrink: 0; }
+.research-icon { width: 60px; height: 60px; object-fit: contain; flex-shrink: 0; }
 
 .publication-list { margin: 0; padding-left: 1.45rem; max-width: 1000px; }
 .publication-list li { padding: 21px 0 24px 10px; border-top: 1px solid var(--line); color: var(--muted); }
