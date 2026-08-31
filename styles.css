@@ -117,7 +117,9 @@ footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted)
   min-height: 650px;
 }
 
-.research-text {
+.research-text,
+.research-intro,
+.research-body {
   position: relative;
   z-index: 2;
   max-width: 650px;
@@ -154,14 +156,16 @@ footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted)
   .footer-wrap { flex-direction: column; }
 
   .research-hero { min-height: auto; }
-  .research-text { max-width: none; }
+  .research-text,
+  .research-intro,
+  .research-body { max-width: none; }
   .research-art {
     position: static;
     width: 100%;
     right: auto;
     top: auto;
     transform: none;
-    margin: 32px 0 0;
+    margin: 24px 0 28px;
     opacity: 0.65;
   }
 }
