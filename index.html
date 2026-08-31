@@ -17,15 +17,28 @@
   .hero-art figcaption { display: none; }
 
   @media (max-width: 800px) {
+    .home-hero {
+      display: flex;
+      flex-direction: column;
+    }
+    .home-hero > div {
+      display: contents;
+    }
+    .home-hero .eyebrow { order: 1; }
+    .home-hero h1 { order: 2; }
+    .home-hero .lead { order: 3; }
     .hero-art {
+      order: 4;
       position: static;
       width: 100%;
       right: auto;
       top: auto;
       transform: none;
-      margin: 36px 0 0;
+      margin: 18px 0 0;
       opacity: 0.6;
     }
+    .home-about { order: 5; }
+    .hero-links { order: 6; }
   }
 </style>
 </head>
