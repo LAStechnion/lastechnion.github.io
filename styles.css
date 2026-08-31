@@ -152,4 +152,16 @@ footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted)
   .research-grid, .people-grid { grid-template-columns: 1fr; }
   .home-strip-inner { align-items: flex-start; flex-direction: column; padding: 25px 0; }
   .footer-wrap { flex-direction: column; }
+
+  .research-hero { min-height: auto; }
+  .research-text { max-width: none; }
+  .research-art {
+    position: static;
+    width: 100%;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin: 32px 0 0;
+    opacity: 0.65;
+  }
 }
