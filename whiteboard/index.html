@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LAS Shared Whiteboard</title>
+<meta name="description" content="A coordinate-based whiteboard shared through GitHub.">
+<style>
+:root{color-scheme:dark;--bg:#0c1424;--surface:#162237;--line:#304159;--muted:#a8b9cd;--text:#e8f3fc;--accent:#3dd7ca}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}
+h1{font-size:21px;letter-spacing:-.5px;margin:0}h2{font-size:15px;margin:0 0 12px}p{margin:8px 0;line-height:1.45}
+.small{font-size:12px;color:var(--muted)}.accent{color:var(--accent)}a{color:#a6e3f2}button,select,input,textarea{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);border-radius:9px;background:#24344b;color:var(--text);padding:9px 12px}
+button:hover{border-color:#66b7c2}button.active,button.primary{background:#176f77;border-color:#3dd7ca;color:white}
+button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.compact{font-size:13px;padding:7px 10px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;padding:18px;max-width:1600px;margin:auto}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:15px;min-width:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:12px}
+.toolbar .separator{height:26px;border-left:1px solid var(--line);margin:0 4px}
+.board-scroller{overflow:auto;max-width:100%;border-radius:9px;border:1px solid #9cabbd;background:#fff}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair;background:#fff}
+.board-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}
+.sidebar{display:flex;flex-direction:column;gap:15px}
+textarea{width:100%;resize:vertical;min-height:95px;padding:10px;color:var(--text);border:1px solid var(--line);border-radius:9px;background:#0e182a}
+select{background:#25374f;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px}
+.colorbox{height:35px;width:35px;border:1px solid var(--line);border-radius:8px;padding:3px;background:transparent}
+.actionrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.reply{white-space:pre-wrap;min-height:60px;color:#dcefe8;border-left:3px solid var(--accent);padding:8px 10px;background:#0d1e2b;border-radius:4px}
+kbd{border:1px solid var(--line);padding:1px 5px;border-radius:4px;background:#25374f}
+footer{font-size:12px;color:var(--muted);max-width:1300px;margin:0 auto;padding:8px 24px 25px}
+@media(max-width:920px){.main{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
+@media(max-width:560px){header{padding:13px}h1{font-size:17px}.main{padding:8px;gap:9px}.panel{padding:10px}canvas{min-width:730px}.toolbar button{padding:7px 9px;font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>LAS <span class="accent">Shared Whiteboard</span></h1><div class="small">Vector drawings · GitHub-backed discussion</div></div>
+  <a href="https://github.com/LAStechnion/lastechnion.github.io/tree/main/whiteboard" target="_blank" rel="noopener">GitHub source ↗</a>
+</header>
+<main class="main">
+<section class="panel">
+  <div class="toolbar" role="toolbar" aria-label="Drawing tools">
+    <button class="active" data-tool="pen">✎ Pen</button>
+    <button data-tool="line">╱ Line</button>
+    <button data-tool="arrow">➜ Arrow</button>
+    <button data-tool="rect">▭ Box</button>
+    <button data-tool="text">T Text</button>
+    <button data-tool="erase">⌫ Erase</button>
+    <span class="separator"></span>
+    <label title="Stroke color"><input aria-label="Color" class="colorbox" id="color" type="color" value="#185cba"></label>
+    <select id="weight" aria-label="Line width"><option value="2">Thin</option><option value="3" selected>Medium</option><option value="6">Thick</option></select>
+    <span class="separator"></span>
+    <button id="undo" title="Undo">↶ Undo</button><button id="redo" title="Redo">↷ Redo</button>
+    <button id="clear" title="Clear the board">Clear</button>
+  </div>
+  <div class="board-scroller"><canvas id="board" width="1200" height="720" aria-label="Interactive whiteboard: draw using your pointer or stylus"></canvas></div>
+  <div class="board-foot"><span class="small" id="status" role="status">Ready · Your edits are saved locally</span>
+    <span class="small"><span id="count">0 objects</span> · 1200×720 logical coordinates</span></div>
+  <div class="actionrow">
+    <button id="demo">Load beam example</button>
+    <button id="export">Download JSON</button>
+    <button id="import">Import JSON</button>
+    <input id="upload" type="file" accept=".json,application/json" hidden>
+  </div>
+</section>
+<aside class="sidebar">
+  <section class="panel">
+    <h2>Discuss this drawing</h2>
+    <label for="question" class="small">Ask the AI something about the board (saved with the next GitHub submission):</label>
+    <textarea id="question" placeholder="Draw the approximate static deflection of this cantilever beam."></textarea>
+    <div class="actionrow">
+      <button class="compact" id="dictate">🎙 Dictate question</button>
+    </div>
+    <p class="small">The AI does not listen automatically on this GitHub-only version. After publishing, ask ChatGPT to read the latest whiteboard.</p>
+  </section>
+  <section class="panel">
+    <h2>Share through GitHub</h2>
+    <p class="small">No API key or GitHub token is required in the whiteboard.</p>
+    <div class="actionrow">
+      <button class="primary" id="publish">Publish drawing</button>
+      <button id="refresh">↻ Load GitHub board</button>
+    </div>
+    <p class="small">Publishing opens a prefilled GitHub issue. Sign in and press <strong>Submit new issue</strong>. A repository workflow saves the coordinates. Refresh to see the committed version.</p>
+    <p class="small" id="cloudstatus">Repository: LAStechnion/lastechnion.github.io</p>
+  </section>
+  <section class="panel">
+    <h2>AI response</h2>
+    <div id="reply" class="reply">No AI response yet. Publish your drawing and ask ChatGPT to update the GitHub whiteboard.</div>
+    <div class="actionrow"><button id="speak">🔊 Speak response</button><button id="stopspeech">Stop</button></div>
+  </section>
+  <section class="panel">
+    <h2>How to collaborate</h2>
+    <p class="small"><strong>1.</strong> Draw and optionally dictate/write your question.<br><strong>2.</strong> Publish through GitHub.<br><strong>3.</strong> Tell ChatGPT: “Read my GitHub whiteboard and draw the answer.”<br><strong>4.</strong> Click <strong>Load GitHub board</strong> to see its annotations.</p>
+  </section>
+</aside>
+</main>
+<footer>Public experimental whiteboard. Do not publish confidential drawings. Local edits stay in your browser until you submit an issue. GitHub is an asynchronous transport, not a live voice server. <a href="README.md">Documentation</a>.</footer>
+<script>
+(function(){
+'use strict';
+const OWNER='LAStechnion', REPO='lastechnion.github.io', W=1200, H=720;
+const REMOTE='https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/whiteboard/board.json';
+const ISSUE='https://github.com/'+OWNER+'/'+REPO+'/issues/new';
+const $=id=>document.getElementById(id);
+const canvas=$('board'),ctx=canvas.getContext('2d');
+const empty=()=>({version:1,width:W,height:H,revision:'initial',updated_at:null,question:'',reply:'',shapes:[]});
+let board=empty(), tool='pen', drawing=null, history=[], future=[], dirty=false;
+const colors={user:'#185cba',ai:'#da703e'};
+const uid=()=> 's_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
+const num=n=>typeof n==='number'&&Number.isFinite(n);
+function valid(o){
+ if(!o||o.version!==1||!Array.isArray(o.shapes)||o.shapes.length>1500)return false;
+ for(const s of o.shapes){
+   if(!s||!['pen','line','arrow','rect','text'].includes(s.type)||!Array.isArray(s.points)||s.points.length>12000)return false;
+   if(!s.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(num)))return false;
+ }
+ return true;
+}
+function saveLocal(){try{localStorage.setItem('las-whiteboard-v1',JSON.stringify(board));}catch(e){}}
+function updated(){board.updated_at=new Date().toISOString();dirty=true;saveLocal();render()}
+function remember(){history.push(JSON.stringify(board.shapes));if(history.length>60)history.shift();future=[]}
+function setStatus(s){$('status').textContent=s}
+function pxy(e){
+ const r=canvas.getBoundingClientRect();
+ return [Math.max(0,Math.min(W,Math.round((e.clientX-r.left)*W/r.width))),Math.max(0,Math.min(H,Math.round((e.clientY-r.top)*H/r.height)))];
+}
+function line(points){
+ if(!points.length)return;
+ ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+ for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);
+ ctx.stroke();
+}
+function draw(s){
+ const p=s.points||[];if(!p.length)return;
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=s.width||3;ctx.strokeStyle=s.color||colors.user;ctx.fillStyle=s.color||colors.user;
+ if(s.type==='pen'||s.type==='line'){if(p.length===1){ctx.beginPath();ctx.arc(p[0][0],p[0][1],ctx.lineWidth/2,0,Math.PI*2);ctx.fill()}else line(p)}
+ if(s.type==='arrow'&&p.length>1){
+   line(p);const a=p[0],b=p[p.length-1],angle=Math.atan2(b[1]-a[1],b[0]-a[0]),size=15+ctx.lineWidth*1.5;
+   ctx.beginPath();ctx.moveTo(b[0]-size*Math.cos(angle-.5),b[1]-size*Math.sin(angle-.5));ctx.lineTo(b[0],b[1]);ctx.lineTo(b[0]-size*Math.cos(angle+.5),b[1]-size*Math.sin(angle+.5));ctx.stroke();
+ }
+ if(s.type==='rect'&&p.length>1){ctx.strokeRect(p[0][0],p[0][1],p[1][0]-p[0][0],p[1][1]-p[0][1])}
+ if(s.type==='text'){ctx.font='24px system-ui, sans-serif';ctx.fillText((s.text||'').slice(0,120),p[0][0],p[0][1])}
+}
+function render(){
+ ctx.clearRect(0,0,W,H);
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle='#f0f3f8';ctx.lineWidth=1;
+ for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
+ for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ board.shapes.forEach(draw);if(drawing)draw(drawing);
+ $('count').textContent=board.shapes.length+' object'+(board.shapes.length===1?'':'s');
+ $('reply').textContent=board.reply||'No AI response yet. Publish your drawing and ask ChatGPT to update the GitHub whiteboard.';
+}
+function distanceToSegment(p,a,b){
+ const vx=b[0]-a[0],vy=b[1]-a[1],den=vx*vx+vy*vy;
+ const t=den?Math.max(0,Math.min(1,((p[0]-a[0])*vx+(p[1]-a[1])*vy)/den)):0;
+ return Math.hypot(p[0]-(a[0]+t*vx),p[1]-(a[1]+t*vy));
+}
+function hit(s,p){
+ const pts=s.points||[];
+ if(s.type==='text')return pts[0]&&Math.abs(p[0]-pts[0][0])<Math.max(50,(s.text||'').length*13)&&Math.abs(p[1]-pts[0][1])<30;
+ if(s.type==='rect'&&pts.length>1){const [a,b]=pts;return Math.min(a[0],b[0])-10<=p[0]&&Math.max(a[0],b[0])+10>=p[0]&&Math.min(a[1],b[1])-10<=p[1]&&Math.max(a[1],b[1])+10>=p[1]}
+ if(pts.length===1)return Math.hypot(p[0]-pts[0][0],p[1]-pts[0][1])<14;
+ for(let i=1;i<pts.length;i++)if(distanceToSegment(p,pts[i-1],pts[i])<14)return true;
+ return false;
+}
+canvas.addEventListener('pointerdown',e=>{
+ if(e.button!==0&&e.pointerType==='mouse')return;
+ e.preventDefault();const p=pxy(e);
+ if(tool==='erase'){const k=board.shapes.findLastIndex(s=>hit(s,p));if(k>=0){remember();board.shapes.splice(k,1);updated()}return}
+ if(tool==='text'){
+   const t=prompt('Text to place at this position:');
+   if(t&&t.trim()){remember();board.shapes.push({id:uid(),author:'user',type:'text',color:$('color').value,width:2,points:[p],text:t.trim().slice(0,120)});updated()}return;
+ }
+ canvas.setPointerCapture(e.pointerId);
+ drawing={id:uid(),author:'user',type:tool,color:$('color').value,width:Number($('weight').value),points:[p,p]};
+ render();
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!drawing)return;const p=pxy(e),v=drawing.points;
+ if(tool==='pen'){if(Math.hypot(p[0]-v[v.length-1][0],p[1]-v[v.length-1][1])>=2){v.push(p);render()}}
+ else{v[v.length-1]=p;render()}
+});
+function finish(e){
+ if(!drawing)return;
+ const p=pxy(e);if(tool!=='pen')drawing.points[drawing.points.length-1]=p;
+ const d=drawing;drawing=null;
+ if(tool==='pen'&&d.points.length===2&&d.points[0][0]===d.points[1][0]&&d.points[0][1]===d.points[1][1])d.points=[d.points[0]];
+ remember();board.shapes.push(d);updated();
+}
+canvas.addEventListener('pointerup',finish);
+canvas.addEventListener('pointercancel',()=>{drawing=null;render()});
+document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{
+ tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));
+}));
+$('undo').onclick=()=>{if(!history.length)return;future.push(JSON.stringify(board.shapes));board.shapes=JSON.parse(history.pop());updated()};
+$('redo').onclick=()=>{if(!future.length)return;history.push(JSON.stringify(board.shapes));board.shapes=JSON.parse(future.pop());updated()};
+$('clear').onclick=()=>{if(!confirm('Clear the current board?'))return;remember();board.shapes=[];board.reply='';updated()};
+$('demo').onclick=()=>{
+ if(board.shapes.length&&!confirm('Replace current drawing with the cantilever example?'))return;
+ remember();
+ const add=(type,points,color=colors.user,txt='')=>({id:uid(),author:'user',type,color,width:3,points,...(txt?{text:txt}:{})});
+ const shapes=[
+   add('line',[[160,205],[160,490]]),
+   add('line',[[160,352],[820,352]]),
+   add('arrow',[[820,170],[820,333]],'#d45f45'),
+   add('text',[[839,240]],'#d45f45','F'),
+   add('text',[[185,323]],colors.user,'Cantilever beam')
+ ];
+ for(let y=220;y<490;y+=22)shapes.push(add('line',[[141,y+18],[160,y]]));
+ board.shapes=shapes;board.question='Draw the approximate static deflection of this cantilever under the tip force.';board.reply='';
+ $('question').value=board.question;updated();
+};
+$('question').addEventListener('input',()=>{board.question=$('question').value.slice(0,1000);saveLocal();dirty=true});
+$('export').onclick=()=>{
+ board.question=$('question').value;
+ const blob=new Blob([JSON.stringify(board,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='las-whiteboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+$('import').onclick=()=>$('upload').click();
+$('upload').onchange=async e=>{
+ const f=e.target.files?.[0];if(!f)return;
+ try{const o=JSON.parse(await f.text());if(!valid(o))throw Error('Unrecognized board file');
+  if(!confirm('Replace your current drawing with the imported board?'))return;
+  board=o;history=[];future=[];$('question').value=board.question||'';updated();setStatus('Imported JSON · locally saved');
+ }catch(err){alert('Import failed: '+err.message)}finally{e.target.value=''}
+};
+async function refreshCloud(){
+ if(dirty&&!confirm('Your local drawing has changes. Replace it with the published GitHub board?'))return;
+ setStatus('Loading GitHub board…');
+ try{
+  const res=await fetch(REMOTE+'?t='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw Error('GitHub returned '+res.status);
+  const data=await res.json();if(!valid(data))throw Error('Invalid board data');
+  board=data;dirty=false;history=[];future=[];saveLocal();$('question').value=board.question||'';
+  render();setStatus('Loaded published GitHub board · '+(board.updated_at||'initial version'));
+  $('cloudstatus').textContent='Latest published board: '+(board.updated_at||'initial version');
+ }catch(err){setStatus('Could not load GitHub board: '+err.message)}
+}
+$('refresh').onclick=refreshCloud;
+$('publish').onclick=()=>{
+ board.question=$('question').value.slice(0,1000);saveLocal();
+ const payload=JSON.stringify({version:1,width:W,height:H,updated_at:new Date().toISOString(),question:board.question,shapes:board.shapes});
+ const body='<!-- LAS_WHITEBOARD_V1 -->\n'+'Board coordinates and question:\n\n'+'\\'+'\\'+'\\'+'json\n'+payload+'\n'+'\\'+'\\'+'\\'+'\n\nPublished from LAS Shared Whiteboard.';
+ const url=ISSUE+'?title='+encodeURIComponent('[whiteboard] Update drawing')+'&body='+encodeURIComponent(body);
+ if(url.length>7500){
+  alert('This drawing is too large for a prefilled GitHub issue URL. Download JSON instead and ask ChatGPT to update the board directly from the file.');return;
+ }
+ window.open(url,'_blank','noopener,noreferrer');
+ setStatus('GitHub issue opened · sign in and click Submit new issue to publish');
+};
+$('speak').onclick=()=>{if(!('speechSynthesis'in window)){alert('Speech output unavailable in this browser');return}speechSynthesis.cancel();const utter=new SpeechSynthesisUtterance(board.reply||'No AI response yet.');utter.lang='en-US';speechSynthesis.speak(utter)};
+$('stopspeech').onclick=()=>{if('speechSynthesis'in window)speechSynthesis.cancel()};
+$('dictate').onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){alert('Browser speech recognition is unavailable. Type your question instead.');return}
+ const r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;
+ r.onresult=e=>{const q=$('question');q.value=(q.value+' '+e.results[0][0].transcript).trim();board.question=q.value;saveLocal();dirty=true};
+ r.onerror=e=>setStatus('Dictation: '+e.error);r.start();
+};
+try{const s=localStorage.getItem('las-whiteboard-v1');if(s){const o=JSON.parse(s);if(valid(o)){board=o;dirty=true;$('question').value=board.question||'';setStatus('Restored local draft · Load GitHub board to replace')}}else{setStatus('Ready · Load GitHub board or draw locally')}}catch(e){}
+render();
+})();
+</script>
+</body>
+</html>
