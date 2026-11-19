@@ -1,0 +1,42 @@
+name: Save shared whiteboard submission
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: whiteboard-updates
+  cancel-in-progress: false
+
+jobs:
+  save-board:
+    if: github.event.issue.user.login == github.repository_owner && startsWith(github.event.issue.title, '[whiteboard]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Validate and create JSON drawing
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python3 .github/scripts/import_whiteboard_issue.py
+      - name: Commit whiteboard document
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add whiteboard/board.json
+          if ! git diff --cached --quiet; then
+            git commit -m "whiteboard: update from issue #${{ github.event.issue.number }}"
+            git push origin HEAD:main
+          fi
+      - name: Confirm update in issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "Drawing saved to whiteboard/board.json. Return to the whiteboard and click Load GitHub board. Tell ChatGPT to read the latest whiteboard for an AI response."
+          gh issue close "$ISSUE_NUMBER" --reason completed
