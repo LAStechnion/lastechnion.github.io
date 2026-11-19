@@ -2,10 +2,10 @@
   "version": 1,
   "width": 1200,
   "height": 720,
-  "revision": "7da46dbeb775b632da75",
-  "updated_at": "2026-11-19T20:41:24.562Z",
+  "revision": "ai-demo-mwo0nj6s",
+  "updated_at": "2026-11-19T20:42:11.044Z",
   "question": "Demonstration: please draw the approximate downward deflection of this cantilever.",
-  "reply": "",
+  "reply": "For an Euler–Bernoulli cantilever with a downward tip load F, the static deflection is w(x) = F x^2 (3L - x)/(6EI), taking downward as positive. The orange curve shows the qualitative shape: both deflection and slope are zero at the clamp, and deflection is greatest at the tip. The plotted amplitude is exaggerated for visibility.",
   "shapes": [
     {
       "id": "test-fixed-end",
@@ -57,6 +57,153 @@
           333
         ]
       ]
+    },
+    {
+      "id": "ai-demo-static-deflection",
+      "author": "ai",
+      "type": "pen",
+      "color": "#da703e",
+      "width": 5,
+      "points": [
+        [
+          160,
+          352
+        ],
+        [
+          182,
+          352
+        ],
+        [
+          204,
+          353
+        ],
+        [
+          226,
+          354
+        ],
+        [
+          248,
+          356
+        ],
+        [
+          270,
+          358
+        ],
+        [
+          292,
+          360
+        ],
+        [
+          314,
+          363
+        ],
+        [
+          336,
+          366
+        ],
+        [
+          358,
+          370
+        ],
+        [
+          380,
+          373
+        ],
+        [
+          402,
+          378
+        ],
+        [
+          424,
+          382
+        ],
+        [
+          446,
+          387
+        ],
+        [
+          468,
+          392
+        ],
+        [
+          490,
+          397
+        ],
+        [
+          512,
+          403
+        ],
+        [
+          534,
+          409
+        ],
+        [
+          556,
+          415
+        ],
+        [
+          578,
+          421
+        ],
+        [
+          600,
+          427
+        ],
+        [
+          622,
+          434
+        ],
+        [
+          644,
+          440
+        ],
+        [
+          666,
+          447
+        ],
+        [
+          688,
+          454
+        ],
+        [
+          710,
+          461
+        ],
+        [
+          732,
+          468
+        ],
+        [
+          754,
+          475
+        ],
+        [
+          776,
+          483
+        ],
+        [
+          798,
+          490
+        ],
+        [
+          820,
+          497
+        ]
+      ]
+    },
+    {
+      "id": "ai-demo-caption",
+      "author": "ai",
+      "type": "text",
+      "color": "#da703e",
+      "width": 2,
+      "points": [
+        [
+          440,
+          570
+        ]
+      ],
+      "text": "AI: exaggerated static deflection"
     }
   ]
 }
