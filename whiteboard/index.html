@@ -243,7 +243,8 @@ $('refresh').onclick=refreshCloud;
 $('publish').onclick=()=>{
  board.question=$('question').value.slice(0,1000);saveLocal();
  const payload=JSON.stringify({version:1,width:W,height:H,updated_at:new Date().toISOString(),question:board.question,shapes:board.shapes});
- const body='<!-- LAS_WHITEBOARD_V1 -->\n'+'Board coordinates and question:\n\n'+'\\'+'\\'+'\\'+'json\n'+payload+'\n'+'\\'+'\\'+'\\'+'\n\nPublished from LAS Shared Whiteboard.';
+ const fence=String.fromCharCode(96).repeat(3);
+ const body='<!-- LAS_WHITEBOARD_V1 -->\nBoard coordinates and question:\n\n'+fence+'json\n'+payload+'\n'+fence+'\n\nPublished from LAS Shared Whiteboard.';
  const url=ISSUE+'?title='+encodeURIComponent('[whiteboard] Update drawing')+'&body='+encodeURIComponent(body);
  if(url.length>7500){
   alert('This drawing is too large for a prefilled GitHub issue URL. Download JSON instead and ask ChatGPT to update the board directly from the file.');return;
