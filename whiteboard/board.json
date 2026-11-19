@@ -2,9 +2,61 @@
   "version": 1,
   "width": 1200,
   "height": 720,
-  "revision": "initial",
-  "updated_at": "2026-11-19T00:00:00Z",
-  "question": "",
+  "revision": "7da46dbeb775b632da75",
+  "updated_at": "2026-11-19T20:41:24.562Z",
+  "question": "Demonstration: please draw the approximate downward deflection of this cantilever.",
   "reply": "",
-  "shapes": []
+  "shapes": [
+    {
+      "id": "test-fixed-end",
+      "author": "user",
+      "type": "line",
+      "color": "#185cba",
+      "width": 3,
+      "points": [
+        [
+          160,
+          205
+        ],
+        [
+          160,
+          490
+        ]
+      ]
+    },
+    {
+      "id": "test-beam",
+      "author": "user",
+      "type": "line",
+      "color": "#185cba",
+      "width": 3,
+      "points": [
+        [
+          160,
+          352
+        ],
+        [
+          820,
+          352
+        ]
+      ]
+    },
+    {
+      "id": "test-load",
+      "author": "user",
+      "type": "arrow",
+      "color": "#d45f45",
+      "width": 3,
+      "points": [
+        [
+          820,
+          170
+        ],
+        [
+          820,
+          333
+        ]
+      ]
+    }
+  ]
 }
